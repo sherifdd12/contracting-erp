@@ -31,7 +31,8 @@ const Navbar = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         setIsLoggedIn(false);
-        router.push('/');
+        setUserRole(null);
+        router.push('/login');
     };
 
     const navStyle = {
@@ -62,12 +63,15 @@ const Navbar = () => {
 
     return (
         <nav style={navStyle}>
-            <Link href="/" style={linkStyle}>Home</Link>
+            <Link href={isLoggedIn ? "/dashboard" : "/login"} style={linkStyle}>Home</Link>
             {isLoggedIn && (
                 <Link href="/projects" style={linkStyle}>Projects</Link>
             )}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && (
                 <Link href="/accounting" style={linkStyle}>Accounting</Link>
+            )}
+            {isLoggedIn && userRole === 'admin' && (
+                <Link href="/hr" style={linkStyle}>HR</Link>
             )}
             {isLoggedIn && (
                 <button onClick={handleLogout} style={buttonStyle}>Logout</button>

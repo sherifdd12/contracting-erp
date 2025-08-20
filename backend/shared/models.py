@@ -56,3 +56,30 @@ class Invoice(Base):
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
 
     project = relationship('Project', back_populates="invoices")
+
+
+# --- HR Models ---
+class Employee(Base):
+    __tablename__ = 'employees'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    job_title = Column(String(100))
+    hire_date = Column(DateTime, default=datetime.utcnow)
+    salary = Column(Float)
+
+    user = relationship('User', back_populates='employee_profile')
+    leave_requests = relationship('LeaveRequest', back_populates='employee')
+
+class LeaveRequest(Base):
+    __tablename__ = 'leave_requests'
+    id = Column(Integer, primary_key=True)
+    employee_id = Column(Integer, ForeignKey('employees.id'), nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    reason = Column(Text)
+    status = Column(String(50), default='pending') # e.g., pending, approved, rejected
+
+    employee = relationship('Employee', back_populates='leave_requests')
+
+# Add back-population to User model
+User.employee_profile = relationship("Employee", uselist=False, back_populates="user")
