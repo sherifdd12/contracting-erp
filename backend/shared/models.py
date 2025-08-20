@@ -20,6 +20,8 @@ class User(Base):
     password_hash = Column(String(128), nullable=False)
     role = Column(String(50), nullable=False)
 
+    tasks = relationship("Task", back_populates="assignee")
+
 class Project(Base):
     __tablename__ = 'projects'
     id = Column(Integer, primary_key=True)

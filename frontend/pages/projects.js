@@ -7,6 +7,9 @@ import Navbar from '../components/Navbar';
 export default function ProjectsPage() {
     const router = useRouter();
     const [projects, setProjects] = useState([]);
+    const [users, setUsers] = useState([]); // For assignee dropdown
+    const [selectedProject, setSelectedProject] = useState(null); // To show tasks for
+    const [tasks, setTasks] = useState([]);
     const [message, setMessage] = useState('');
 
     // Form state for creating a new project
@@ -16,14 +19,29 @@ export default function ProjectsPage() {
 
     const projectsApiUrl = process.env.NEXT_PUBLIC_PROJECTS_API_URL || 'http://localhost:8002';
 
+    const authApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+    const tasksApiUrl = process.env.NEXT_PUBLIC_TASKS_API_URL || 'http://localhost:8005';
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/'); // Redirect to login page if no token
+            router.push('/login'); // Redirect to login page if no token
         } else {
             fetchProjects(token);
+            fetchUsers(token);
         }
     }, [router]);
+
+    const fetchUsers = async (token) => {
+        try {
+            const response = await axios.get(`${authApiUrl}/users/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUsers(response.data);
+        } catch (error) {
+            setMessage('Failed to fetch users.');
+        }
+    };
 
     const fetchProjects = async (token) => {
         try {
@@ -44,7 +62,7 @@ export default function ProjectsPage() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/');
+            router.push('/login');
             return;
         }
         try {
@@ -54,13 +72,63 @@ export default function ProjectsPage() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setMessage('Project created successfully!');
-            // Clear form and refetch projects
             setName('');
             setDescription('');
             setBudget('');
             fetchProjects(token);
         } catch (error) {
             setMessage(`Failed to create project: ${error.response?.data?.detail || error.message}`);
+        }
+    };
+
+    const fetchTasksForProject = async (projectId, token) => {
+        try {
+            const response = await axios.get(`${tasksApiUrl}/tasks/project/${projectId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setTasks(response.data);
+        } catch (error) {
+            setTasks([]);
+        }
+    };
+
+    const handleSelectProject = (project) => {
+        setSelectedProject(project);
+        const token = localStorage.getItem('token');
+        fetchTasksForProject(project.id, token);
+    };
+
+    // --- Task Form State & Handler ---
+    const [taskDescription, setTaskDescription] = useState('');
+    const [taskAssignee, setTaskAssignee] = useState('');
+
+    const handleCreateTask = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token || !selectedProject) {
+            setMessage('Please select a project first.');
+            return;
+        }
+        if (!taskAssignee) {
+            setMessage('Please assign the task to a user.');
+            return;
+        }
+        try {
+            await axios.post(
+                `${tasksApiUrl}/tasks/`,
+                {
+                    description: taskDescription,
+                    project_id: selectedProject.id,
+                    assigned_to_id: parseInt(taskAssignee),
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setMessage('Task created successfully!');
+            setTaskDescription('');
+            setTaskAssignee('');
+            fetchTasksForProject(selectedProject.id, token);
+        } catch (error) {
+            setMessage(`Failed to create task: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -72,9 +140,21 @@ export default function ProjectsPage() {
                 {message && <p className={styles.message}>{message}</p>}
 
                 <div className={styles.grid}>
-                    {/* Create Project Form */}
-                    <div className={styles.card}>
-                        <h2>Create New Project</h2>
+                    {/* Column 1: Projects List & Create Project Form */}
+                    <div className={styles.card} style={{width: '100%', maxWidth: '400px'}}>
+                        <h3>All Projects</h3>
+                        {projects.length > 0 ? (
+                            <ul style={{listStyle: 'none', padding: 0}}>
+                                {projects.map((project) => (
+                                    <li key={project.id} onClick={() => handleSelectProject(project)} style={{cursor: 'pointer', fontWeight: selectedProject?.id === project.id ? 'bold' : 'normal', padding: '0.5rem', borderBottom: '1px solid #eee'}}>
+                                        {project.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : <p>No projects found.</p>}
+
+                        <hr style={{margin: '2rem 0'}}/>
+                        <h3>Create New Project</h3>
                         <form onSubmit={handleCreateProject}>
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Project Name" required />
                             <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description"></textarea>
@@ -83,20 +163,28 @@ export default function ProjectsPage() {
                         </form>
                     </div>
 
-                    {/* Projects List */}
-                    <div className={styles.card} style={{width: '100%', maxWidth: '800px'}}>
-                        <h2>Existing Projects</h2>
-                        {projects.length > 0 ? (
-                            <ul>
-                                {projects.map((project) => (
-                                    <li key={project.id}>
-                                        <strong>{project.name}</strong> - Budget: ${project.budget}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No projects found. Create one!</p>
-                        )}
+                    {/* Column 2: Tasks for Selected Project */}
+                    <div className={styles.card} style={{width: '100%', maxWidth: '600px'}}>
+                        <h3>Tasks for: {selectedProject ? selectedProject.name : '...'}</h3>
+                        {selectedProject ? (
+                            <>
+                                {tasks.length > 0 ? (
+                                    <ul style={{listStyle: 'none', padding: 0}}>{tasks.map(task => <li key={task.id} style={{padding: '0.5rem', borderBottom: '1px solid #eee'}}>{task.description} <span style={{color: '#888'}}>({task.status})</span></li>)}</ul>
+                                ) : <p>No tasks for this project.</p>}
+                                <hr style={{margin: '2rem 0'}}/>
+                                <h4>Create New Task</h4>
+                                <form onSubmit={handleCreateTask}>
+                                    <textarea value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder="Task description..." required></textarea>
+                                    <select value={taskAssignee} onChange={(e) => setTaskAssignee(e.target.value)} required>
+                                        <option value="">-- Assign to --</option>
+                                        {users.map(user => (
+                                            <option key={user.id} value={user.id}>{user.username}</option>
+                                        ))}
+                                    </select>
+                                    <button type="submit">Add Task</button>
+                                </form>
+                            </>
+                        ) : <p>Select a project to view its tasks.</p>}
                     </div>
                 </div>
             </main>
