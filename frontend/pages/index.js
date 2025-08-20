@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import styles from '../styles/Home.module.css';
+import Navbar from '../components/Navbar';
 
 export default function AuthPage() {
   // State for register form
@@ -56,8 +57,8 @@ export default function AuthPage() {
 
   return (
     <div className={styles.container}>
+      <Navbar />
       <main className={styles.main}>
-        <h1 className={styles.title}>Contracting ERP</h1>
         {message && <p className={styles.message}>{message}</p>}
 
         <div className={styles.grid}>

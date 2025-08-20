@@ -3,29 +3,23 @@ import sys
 from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session
 
 # This is a common pattern to make shared modules importable in a monorepo
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from shared.models import Base, User
+from shared.database import engine, get_db
 
 # --- Configuration ---
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/contracting_db")
 SECRET_KEY = os.getenv("SECRET_KEY", "a-very-secret-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# --- Database Setup ---
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Create tables on startup
+# Create tables on startup (only the auth service should be responsible for this)
 Base.metadata.create_all(bind=engine)
 
 # --- Pydantic Schemas ---
@@ -42,7 +36,7 @@ class UserOut(BaseModel):
     role: str
 
     class Config:
-        from_attributes = True # Updated from orm_mode for Pydantic v2
+        orm_mode = True
 
 class Token(BaseModel):
     access_token: str
@@ -54,28 +48,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # --- FastAPI App ---
 app = FastAPI()
-
-# --- CORS Middleware ---
-# This allows the frontend (running on localhost:3000) to communicate with the backend.
-origins = [
-    "http://localhost:3000",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"], # Allows all headers
-)
-
-# --- Dependencies ---
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # --- Utility Functions ---
 def verify_password(plain_password, hashed_password):

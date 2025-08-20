@@ -15,11 +15,6 @@ services:
       # Expose port 5432 to the host for direct database access if needed
       - "5432:5432"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d contracting_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Authentication Backend Service
   auth:
@@ -37,8 +32,23 @@ services:
       # Non-sensitive variables can remain here
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
     depends_on:
-      postgres:
-        condition: service_healthy # Wait for the healthcheck
+      - postgres
+    restart: unless-stopped
+
+  # Projects Backend Service
+  projects:
+    container_name: contracting_projects
+    build:
+      context: ./backend
+      dockerfile: services/projects/Dockerfile
+    ports:
+      - "8002:80"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+    depends_on:
+      - postgres
     restart: unless-stopped
 
   # Frontend Web Application Service
@@ -49,10 +59,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # This URL is used by the client-side browser to reach the auth service
+      # These URLs are used by the client-side browser to reach the backend services
       - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_PROJECTS_API_URL=http://localhost:8002
     depends_on:
       - auth
+      - projects
     restart: unless-stopped
 
 # Define the named volume for persisting database data
