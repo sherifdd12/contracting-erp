@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:14-alpine
+    container_name: contracting_postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: contracting_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Expose port 5432 to the host for direct database access if needed
+      - "5432:5432"
+    restart: unless-stopped
+
+  # Authentication Backend Service
+  auth:
+    container_name: contracting_auth
+    build:
+      context: ./backend
+      dockerfile: services/auth/Dockerfile
+    ports:
+      # Expose port 8001 on the host to be accessible by the frontend client
+      - "8001:80"
+    # Load sensitive variables from a .env file at the project root
+    env_file:
+      - .env
+    environment:
+      # Non-sensitive variables can remain here
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Frontend Web Application Service
+  frontend:
+    container_name: contracting_frontend
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # This URL is used by the client-side browser to reach the auth service
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    depends_on:
+      - auth
+    restart: unless-stopped
+
+# Define the named volume for persisting database data
+volumes:
+  postgres_data:
