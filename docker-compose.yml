@@ -51,6 +51,22 @@ services:
       - postgres
     restart: unless-stopped
 
+  # Accounting Backend Service
+  accounting:
+    container_name: contracting_accounting
+    build:
+      context: ./backend
+      dockerfile: services/accounting/Dockerfile
+    ports:
+      - "8003:80"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
   # Frontend Web Application Service
   frontend:
     container_name: contracting_frontend
@@ -62,9 +78,11 @@ services:
       # These URLs are used by the client-side browser to reach the backend services
       - NEXT_PUBLIC_API_URL=http://localhost:8001
       - NEXT_PUBLIC_PROJECTS_API_URL=http://localhost:8002
+      - NEXT_PUBLIC_ACCOUNTING_API_URL=http://localhost:8003
     depends_on:
       - auth
       - projects
+      - accounting
     restart: unless-stopped
 
 # Define the named volume for persisting database data

@@ -72,6 +72,7 @@ export default function AuthPage() {
               <select value={regRole} onChange={(e) => setRegRole(e.target.value)}>
                 <option value="engineer">Engineer</option>
                 <option value="sales">Sales</option>
+                <option value="accountant">Accountant</option>
                 <option value="admin">Admin</option>
               </select>
               <button type="submit">Register</button>
