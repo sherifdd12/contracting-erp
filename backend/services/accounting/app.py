@@ -81,9 +81,13 @@ def get_invoices_for_project(
     db: Session = Depends(get_db),
     token_payload: TokenPayload = Depends(get_current_user_payload),
 ):
+    # It's correct to return an empty list if no invoices are found for a project.
+    # A 404 should only be returned if the project itself does not exist.
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
     invoices = db.query(Invoice).filter(Invoice.project_id == project_id).all()
-    if not invoices:
-        raise HTTPException(status_code=404, detail="No invoices found for this project")
     return invoices
 
 @app.put("/invoices/{invoice_id}/status", response_model=InvoiceOut)

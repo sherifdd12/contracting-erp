@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import axios from 'axios';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function AuthPage() {
+  const router = useRouter();
   // State for register form
   const [regUsername, setRegUsername] = useState('');
   const [regEmail, setRegEmail] = useState('');
@@ -49,7 +51,8 @@ export default function AuthPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', response.data.access_token);
       }
-      setMessage(`Login successful! Token stored.`);
+      setMessage(`Login successful! Redirecting...`);
+      router.push('/projects');
     } catch (error) {
       setMessage(`Login failed: ${error.response?.data?.detail || error.message}`);
     }
