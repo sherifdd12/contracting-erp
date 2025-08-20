@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:14-alpine
+    container_name: contracting_postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: contracting_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d contracting_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Authentication Backend Service
+  auth:
+    container_name: contracting_auth
+    build:
+      context: ./backend
+      dockerfile: services/auth/Dockerfile
+    ports:
+      - "8001:80"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+    depends_on:
+      postgres:
+        condition: service_healthy # Wait for the healthcheck
+    restart: unless-stopped
+
+  # Frontend Web Application Service
+  frontend:
+    container_name: contracting_frontend
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # This URL is used by the client-side browser to reach the auth service
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    depends_on:
+      - auth
+    restart: unless-stopped
+
+# Define the named volume for persisting database data
+volumes:
+  postgres_data:
