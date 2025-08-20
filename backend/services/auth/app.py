@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from typing import List
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -14,6 +15,7 @@ from sqlalchemy.orm import Session
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from shared.models import Base, User
 from shared.database import engine, get_db
+from shared.security import get_current_user_payload, TokenPayload
 
 # --- Configuration ---
 SECRET_KEY = os.getenv("SECRET_KEY", "a-very-secret-key")
@@ -117,3 +119,16 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
         data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/users/", response_model=List[UserOut])
+def read_users(
+    db: Session = Depends(get_db),
+    token: TokenPayload = Depends(get_current_user_payload),
+):
+    if token.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to view users.",
+        )
+    users = db.query(User).all()
+    return users
