@@ -3,6 +3,7 @@ import sys
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -14,6 +15,19 @@ from shared.security import get_current_user_payload, TokenPayload
 
 # --- FastAPI App ---
 app = FastAPI()
+
+# --- CORS Middleware ---
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Pydantic Schemas ---
 class ProjectCreate(BaseModel):
