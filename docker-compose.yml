@@ -12,6 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
+      # Expose port 5432 to the host for direct database access if needed
       - "5432:5432"
     restart: unless-stopped
     healthcheck:
@@ -27,10 +28,13 @@ services:
       context: ./backend
       dockerfile: services/auth/Dockerfile
     ports:
+      # Expose port 8001 on the host to be accessible by the frontend client
       - "8001:80"
+    # Load sensitive variables from a .env file at the project root
     env_file:
       - .env
     environment:
+      # Non-sensitive variables can remain here
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
     depends_on:
       postgres:
