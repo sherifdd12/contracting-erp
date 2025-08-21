@@ -79,6 +79,7 @@ const Navbar = () => {
         <div className={styles.desktopNav} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <Link href={isLoggedIn ? "/dashboard" : "/login"} style={linkStyle}>{t('Home')}</Link>
             {isLoggedIn && <Link href="/projects" style={linkStyle}>{t('Projects')}</Link>}
+            {isLoggedIn && <Link href="/measure" style={linkStyle}>{t('Measure')}</Link>}
             {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && <Link href="/quotes" style={linkStyle}>{t('Quotes')}</Link>}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/accounting" style={linkStyle}>{t('Accounting')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={linkStyle}>{t('HR')}</Link>}
@@ -92,6 +93,7 @@ const Navbar = () => {
         <div className={styles.mobileMenu}>
             <Link href={isLoggedIn ? "/dashboard" : "/login"} style={mobileLinkStyle}>{t('Home')}</Link>
             {isLoggedIn && <Link href="/projects" style={mobileLinkStyle}>{t('Projects')}</Link>}
+            {isLoggedIn && <Link href="/measure" style={mobileLinkStyle}>{t('Measure')}</Link>}
             {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && <Link href="/quotes" style={mobileLinkStyle}>{t('Quotes')}</Link>}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/accounting" style={mobileLinkStyle}>{t('Accounting')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={mobileLinkStyle}>{t('HR')}</Link>}
