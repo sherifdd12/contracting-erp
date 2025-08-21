@@ -46,34 +46,37 @@ const Navbar = () => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '1rem',
-        background: '#333',
-        color: 'white',
+        padding: '1rem 2rem',
+        background: '#ffffff',
+        color: '#111',
+        borderBottom: '1px solid #eaeaea',
     };
 
     const linkStyle = {
-        color: 'white',
+        color: '#333',
         textDecoration: 'none',
-        fontSize: '1.2rem',
-        margin: '0 1rem'
+        fontSize: '1.1rem',
+        margin: '0 1rem',
+        fontWeight: '500',
     };
 
     const mobileLinkStyle = {
         ...linkStyle,
-        margin: '0.5rem 0',
+        margin: '0.75rem 0',
+        fontSize: '1.2rem',
     };
 
     const buttonStyle = {
         background: 'none',
         border: 'none',
-        color: 'white',
+        color: '#333',
         cursor: 'pointer',
-        fontSize: '1.2rem',
-        fontWeight: 'bold',
+        fontSize: '1.1rem',
+        fontWeight: '500',
     };
 
     const desktopNavLinks = (
-        <div className={styles.desktopNav}>
+        <div className={styles.desktopNav} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <Link href={isLoggedIn ? "/dashboard" : "/login"} style={linkStyle}>{t('Home')}</Link>
             {isLoggedIn && <Link href="/projects" style={linkStyle}>{t('Projects')}</Link>}
             {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && <Link href="/quotes" style={linkStyle}>{t('Quotes')}</Link>}
@@ -81,7 +84,7 @@ const Navbar = () => {
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={linkStyle}>{t('HR')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/activity" style={linkStyle}>Activity</Link>}
             {isLoggedIn && <button onClick={handleLogout} style={buttonStyle}>{t('Logout')}</button>}
-            <button onClick={handleLanguageSwitch} style={buttonStyle}>{i18n.language === 'en' ? 'عربي' : 'English'}</button>
+            <button onClick={handleLanguageSwitch} style={{...buttonStyle, marginLeft: '1rem'}}>{i18n.language === 'en' ? 'عربي' : 'English'}</button>
         </div>
     );
 
