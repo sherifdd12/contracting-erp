@@ -1,6 +1,7 @@
 import os
 import sys
 from typing import List
+from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +37,7 @@ class ActivityLogOut(BaseModel):
     user_id: int
     action: str
     details: str | None = None
-    timestamp: str
+    timestamp: datetime
     class Config: orm_mode = True
 
 # --- API Endpoints ---
