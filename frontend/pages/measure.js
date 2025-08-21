@@ -12,6 +12,11 @@ export default function MeasurePage() {
     const [message, setMessage] = useState('Requesting camera access...');
     const [stream, setStream] = useState(null);
     const [detectedCorners, setDetectedCorners] = useState([]);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     // Effect to get the camera stream once
     useEffect(() => {
@@ -107,6 +112,10 @@ export default function MeasurePage() {
             }, 'image/png');
         }
     };
+
+    if (!isClient) {
+        return null; // Render nothing on the server
+    }
 
     return (
         <div className={styles.container}>
