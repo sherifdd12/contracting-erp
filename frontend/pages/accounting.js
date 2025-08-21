@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function AccountingPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [projects, setProjects] = useState([]);
     const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -109,14 +111,14 @@ export default function AccountingPage() {
         <div className={styles.container}>
             <Navbar />
             <main className={styles.main}>
-                <h2 style={{ textAlign: 'center', marginTop: '5rem' }}>Accounting</h2>
+                <h2 style={{ textAlign: 'center', marginTop: '5rem' }}>{t('Accounting')}</h2>
                 {message && <p className={styles.message}>{message}</p>}
 
                 <div className={styles.grid}>
                     <div className={styles.card} style={{ width: '100%', maxWidth: '800px' }}>
-                        <h3>Select a Project</h3>
+                        <h3>{t('Select_a_Project')}</h3>
                         <select onChange={handleProjectChange} value={selectedProjectId} style={{width: '100%', padding: '0.5rem', marginBottom: '1rem'}}>
-                            <option value="">-- Select a Project --</option>
+                            <option value="">{t('Select_a_Project')}</option>
                             {projects.map((project) => (
                                 <option key={project.id} value={project.id}>{project.name}</option>
                             ))}
@@ -124,21 +126,21 @@ export default function AccountingPage() {
 
                         {selectedProjectId && (
                             <>
-                                <h4>Create New Invoice for Selected Project</h4>
+                                <h4>{t('Create_New_Invoice')}</h4>
                                 <form onSubmit={handleCreateInvoice}>
-                                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" required />
-                                    <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                                    <button type="submit">Create Invoice</button>
+                                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={t('Amount')} required />
+                                    <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} placeholder={t('Due_Date')} />
+                                    <button type="submit">{t('Create_New_Invoice')}</button>
                                 </form>
                             </>
                         )}
                     </div>
 
                     <div className={styles.card} style={{ width: '100%', maxWidth: '800px' }}>
-                        <h3>Invoices for Selected Project</h3>
+                        <h3>{t('Invoices_for_Selected_Project')}</h3>
                         {invoices.length > 0 ? (
                             <table style={{width: '100%', textAlign: 'left'}}>
-                                <thead><tr><th>ID</th><th>Amount</th><th>Status</th><th>Due Date</th></tr></thead>
+                                <thead><tr><th>{t('ID')}</th><th>{t('Amount')}</th><th>{t('Status')}</th><th>{t('Due_Date')}</th></tr></thead>
                                 <tbody>
                                     {invoices.map((invoice) => (
                                         <tr key={invoice.id}>
@@ -151,7 +153,7 @@ export default function AccountingPage() {
                                 </tbody>
                             </table>
                         ) : (
-                            <p>No invoices found for this project.</p>
+                            <p>{t('No_invoices_found')}</p>
                         )}
                     </div>
                 </div>

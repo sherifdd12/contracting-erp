@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function ProjectsPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [projects, setProjects] = useState([]);
     const [users, setUsers] = useState([]); // For assignee dropdown
@@ -136,13 +138,13 @@ export default function ProjectsPage() {
         <div className={styles.container}>
             <Navbar />
             <main className={styles.main}>
-                <h2 style={{textAlign: 'center', marginTop: '5rem'}}>Project Management</h2>
+                <h2 style={{textAlign: 'center', marginTop: '5rem'}}>{t('Project_Management')}</h2>
                 {message && <p className={styles.message}>{message}</p>}
 
                 <div className={styles.grid}>
                     {/* Column 1: Projects List & Create Project Form */}
                     <div className={styles.card} style={{width: '100%', maxWidth: '400px'}}>
-                        <h3>All Projects</h3>
+                        <h3>{t('All_Projects')}</h3>
                         {projects.length > 0 ? (
                             <ul style={{listStyle: 'none', padding: 0}}>
                                 {projects.map((project) => (
@@ -151,40 +153,40 @@ export default function ProjectsPage() {
                                     </li>
                                 ))}
                             </ul>
-                        ) : <p>No projects found.</p>}
+                        ) : <p>{t('No_projects_found')}</p>}
 
                         <hr style={{margin: '2rem 0'}}/>
-                        <h3>Create New Project</h3>
+                        <h3>{t('Create_New_Project')}</h3>
                         <form onSubmit={handleCreateProject}>
-                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Project Name" required />
-                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description"></textarea>
-                            <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Budget" required />
-                            <button type="submit">Create Project</button>
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Project_Name')} required />
+                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('Description')}></textarea>
+                            <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder={t('Budget')} required />
+                            <button type="submit">{t('Create_New_Project')}</button>
                         </form>
                     </div>
 
                     {/* Column 2: Tasks for Selected Project */}
                     <div className={styles.card} style={{width: '100%', maxWidth: '600px'}}>
-                        <h3>Tasks for: {selectedProject ? selectedProject.name : '...'}</h3>
+                        <h3>{t('Tasks_for')}: {selectedProject ? selectedProject.name : '...'}</h3>
                         {selectedProject ? (
                             <>
                                 {tasks.length > 0 ? (
                                     <ul style={{listStyle: 'none', padding: 0}}>{tasks.map(task => <li key={task.id} style={{padding: '0.5rem', borderBottom: '1px solid #eee'}}>{task.description} <span style={{color: '#888'}}>({task.status})</span></li>)}</ul>
-                                ) : <p>No tasks for this project.</p>}
+                                ) : <p>{t('No_tasks_for_project')}</p>}
                                 <hr style={{margin: '2rem 0'}}/>
-                                <h4>Create New Task</h4>
+                                <h4>{t('Add_Task')}</h4>
                                 <form onSubmit={handleCreateTask}>
-                                    <textarea value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder="Task description..." required></textarea>
+                                    <textarea value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder={t('Task_description')} required></textarea>
                                     <select value={taskAssignee} onChange={(e) => setTaskAssignee(e.target.value)} required>
-                                        <option value="">-- Assign to --</option>
+                                        <option value="">{t('Assign_to')}</option>
                                         {users.map(user => (
                                             <option key={user.id} value={user.id}>{user.username}</option>
                                         ))}
                                     </select>
-                                    <button type="submit">Add Task</button>
+                                    <button type="submit">{t('Add_Task')}</button>
                                 </form>
                             </>
-                        ) : <p>Select a project to view its tasks.</p>}
+                        ) : <p>{t('Select_project_to_view_tasks')}</p>}
                     </div>
                 </div>
             </main>

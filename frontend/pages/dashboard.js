@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function Dashboard() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [summary, setSummary] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -47,22 +49,23 @@ export default function Dashboard() {
         <div className={styles.container}>
             <Navbar />
             <main className={styles.main}>
-                <h1 className={styles.title} style={{marginTop: '5rem'}}>Dashboard</h1>
+                <h1 className={styles.title} style={{marginTop: '5rem'}}>{t('Welcome_to_Dashboard')}</h1>
+                <p>{t('Select_option_to_start')}</p>
                 {message && <p className={styles.message}>{message}</p>}
 
                 {summary && (
                     <>
                         {/* Stat Cards */}
                         <div className={styles.grid}>
-                            <div className={styles.card}><h3>Total Projects</h3><p style={{fontSize: '2rem'}}>{summary.total_projects}</p></div>
-                            <div className={styles.card}><h3>Total Budget</h3><p style={{fontSize: '2rem'}}>${summary.total_project_budget.toFixed(2)}</p></div>
-                            <div className={styles.card}><h3>Invoices Paid</h3><p style={{fontSize: '2rem'}}>${summary.total_invoice_paid.toFixed(2)}</p></div>
-                            <div className={styles.card}><h3>Accepted Quotes</h3><p style={{fontSize: '2rem'}}>${summary.total_quotes_accepted.toFixed(2)}</p></div>
+                            <div className={styles.card}><h3>{t('Total_Projects')}</h3><p style={{fontSize: '2rem'}}>{summary.total_projects}</p></div>
+                            <div className={styles.card}><h3>{t('Total_Budget')}</h3><p style={{fontSize: '2rem'}}>${summary.total_project_budget.toFixed(2)}</p></div>
+                            <div className={styles.card}><h3>{t('Invoices_Paid')}</h3><p style={{fontSize: '2rem'}}>${summary.total_invoice_paid.toFixed(2)}</p></div>
+                            <div className={styles.card}><h3>{t('Accepted_Quotes')}</h3><p style={{fontSize: '2rem'}}>${summary.total_quotes_accepted.toFixed(2)}</p></div>
                         </div>
 
                         {/* Chart */}
                         <div className={styles.card} style={{width: '100%', maxWidth: '1000px', marginTop: '2rem'}}>
-                            <h3>Financial Overview</h3>
+                            <h3>{t('Financial_Overview')}</h3>
                             <ResponsiveContainer width="100%" height={400}>
                                 <BarChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" />
@@ -70,9 +73,9 @@ export default function Dashboard() {
                                     <YAxis />
                                     <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
                                     <Legend />
-                                    <Bar dataKey="Budget" fill="#8884d8" />
-                                    <Bar dataKey="Paid" fill="#82ca9d" />
-                                    <Bar dataKey="Accepted_Quotes" fill="#ffc658" />
+                                    <Bar dataKey="Budget" name={t('Budget')} fill="#8884d8" />
+                                    <Bar dataKey="Paid" name={t('Paid')} fill="#82ca9d" />
+                                    <Bar dataKey="Accepted_Quotes" name={t('Accepted_Quotes')} fill="#ffc658" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { jwtDecode } from 'jwt-decode';
 
 const Navbar = () => {
+    const { t } = useTranslation();
     const router = useRouter();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState(null);
@@ -35,6 +37,12 @@ const Navbar = () => {
         router.push('/login');
     };
 
+    const { i18n } = useTranslation();
+    const handleLanguageSwitch = () => {
+        const newLang = i18n.language === 'en' ? 'ar' : 'en';
+        i18n.changeLanguage(newLang);
+    };
+
     const navStyle = {
         width: '100%',
         display: 'flex',
@@ -63,22 +71,25 @@ const Navbar = () => {
 
     return (
         <nav style={navStyle}>
-            <Link href={isLoggedIn ? "/dashboard" : "/login"} style={linkStyle}>Home</Link>
+            <Link href={isLoggedIn ? "/dashboard" : "/login"} style={linkStyle}>{t('Home')}</Link>
             {isLoggedIn && (
-                <Link href="/projects" style={linkStyle}>Projects</Link>
+                <Link href="/projects" style={linkStyle}>{t('Projects')}</Link>
             )}
             {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && (
-                <Link href="/quotes" style={linkStyle}>Quotes</Link>
+                <Link href="/quotes" style={linkStyle}>{t('Quotes')}</Link>
             )}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && (
-                <Link href="/accounting" style={linkStyle}>Accounting</Link>
+                <Link href="/accounting" style={linkStyle}>{t('Accounting')}</Link>
             )}
             {isLoggedIn && userRole === 'admin' && (
-                <Link href="/hr" style={linkStyle}>HR</Link>
+                <Link href="/hr" style={linkStyle}>{t('HR')}</Link>
             )}
             {isLoggedIn && (
-                <button onClick={handleLogout} style={buttonStyle}>Logout</button>
+                <button onClick={handleLogout} style={buttonStyle}>{t('Logout')}</button>
             )}
+            <button onClick={handleLanguageSwitch} style={buttonStyle}>
+                {i18n.language === 'en' ? 'عربي' : 'English'}
+            </button>
         </nav>
     );
 };

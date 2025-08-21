@@ -15,7 +15,10 @@
     "axios": "^1.7.2",
     "jwt-decode": "^4.0.0",
     "jspdf": "^2.5.1",
-    "recharts": "^2.12.7"
+    "recharts": "^2.12.7",
+    "i18next": "^23.11.5",
+    "react-i18next": "^14.1.2",
+    "i18next-browser-languagedetector": "^7.2.1"
   },
   "devDependencies": {
     "eslint": "^8",

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function RegisterPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [regUsername, setRegUsername] = useState('');
     const [regEmail, setRegEmail] = useState('');
@@ -25,12 +27,12 @@ export default function RegisterPage() {
                 password: regPassword,
                 role: regRole,
             });
-            setMessage(`User ${response.data.username} created successfully! Redirecting to login...`);
+            setMessage(`${t('User_created_successfully')} ${t('Redirecting')}`);
             setTimeout(() => {
                 router.push('/login');
             }, 2000);
         } catch (error) {
-            setMessage(`Registration failed: ${error.response?.data?.detail || error.message}`);
+            setMessage(`${t('Registration_failed')}: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -41,21 +43,21 @@ export default function RegisterPage() {
                 {message && <p className={styles.message}>{message}</p>}
 
                 <div className={styles.card}>
-                    <h2>Register</h2>
+                    <h2>{t('Register')}</h2>
                     <form onSubmit={handleRegister}>
-                        <input type="text" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} placeholder="Username" required />
-                        <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="Email" required />
-                        <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder="Password" required />
+                        <input type="text" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} placeholder={t('Username')} required />
+                        <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder={t('Email')} required />
+                        <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} placeholder={t('Password')} required />
                         <select value={regRole} onChange={(e) => setRegRole(e.target.value)}>
-                            <option value="engineer">Engineer</option>
-                            <option value="sales">Sales</option>
-                            <option value="accountant">Accountant</option>
-                            <option value="admin">Admin</option>
+                            <option value="engineer">{t('Engineer')}</option>
+                            <option value="sales">{t('Sales')}</option>
+                            <option value="accountant">{t('Accountant')}</option>
+                            <option value="admin">{t('Admin')}</option>
                         </select>
-                        <button type="submit">Register</button>
+                        <button type="submit">{t('Register')}</button>
                     </form>
                     <p style={{textAlign: 'center', marginTop: '1rem'}}>
-                        Already have an account? <Link href="/login">Login here</Link>
+                        {t('Already_have_account')} <Link href="/login">{t('Login_here')}</Link>
                     </p>
                 </div>
             </main>

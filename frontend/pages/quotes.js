@@ -3,10 +3,12 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import jsPDF from 'jspdf';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function QuotesPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [quotes, setQuotes] = useState([]);
     const [message, setMessage] = useState('');
@@ -110,34 +112,34 @@ export default function QuotesPage() {
         <div className={styles.container}>
             <Navbar />
             <main className={styles.main}>
-                <h2 style={{ textAlign: 'center', marginTop: '5rem' }}>Quotations</h2>
+                <h2 style={{ textAlign: 'center', marginTop: '5rem' }}>{t('Quotes')}</h2>
                 {message && <p className={styles.message}>{message}</p>}
 
                 <div className={styles.grid}>
                     <div className={styles.card} style={{ width: '100%', maxWidth: '600px' }}>
-                        <h3>Create New Quotation</h3>
+                        <h3>{t('Create_New_Quotation')}</h3>
                         <form onSubmit={handleCreateQuote}>
-                            <input type="text" placeholder="Client Name" value={clientName} onChange={e => setClientName(e.target.value)} required />
-                            <h4>Line Items</h4>
+                            <input type="text" placeholder={t('Client_Name')} value={clientName} onChange={e => setClientName(e.target.value)} required />
+                            <h4>{t('Line_Items')}</h4>
                             {lineItems.map((item, index) => (
                                 <div key={index} style={{display: 'flex', gap: '0.5rem', marginBottom: '0.5rem'}}>
-                                    <input type="text" name="description" placeholder="Description" value={item.description} onChange={e => handleItemChange(index, e)} required />
-                                    <input type="number" name="quantity" placeholder="Qty" value={item.quantity} onChange={e => handleItemChange(index, e)} required style={{width: '80px'}}/>
-                                    <input type="number" name="unit_price" placeholder="Unit Price" value={item.unit_price} onChange={e => handleItemChange(index, e)} required style={{width: '100px'}}/>
+                                    <input type="text" name="description" placeholder={t('Description')} value={item.description} onChange={e => handleItemChange(index, e)} required />
+                                    <input type="number" name="quantity" placeholder={t('Quantity')} value={item.quantity} onChange={e => handleItemChange(index, e)} required style={{width: '80px'}}/>
+                                    <input type="number" name="unit_price" placeholder={t('Unit_Price')} value={item.unit_price} onChange={e => handleItemChange(index, e)} required style={{width: '100px'}}/>
                                     <button type="button" onClick={() => handleRemoveItem(index)}>X</button>
                                 </div>
                             ))}
-                            <button type="button" onClick={handleAddItem}>Add Item</button>
-                            <button type="submit" style={{marginTop: '1rem'}}>Save Quotation</button>
+                            <button type="button" onClick={handleAddItem}>{t('Add_Item')}</button>
+                            <button type="submit" style={{marginTop: '1rem'}}>{t('Save_Quotation')}</button>
                         </form>
                     </div>
 
                     <div className={styles.card} style={{ width: '100%', maxWidth: '800px' }}>
-                        <h3>Existing Quotations</h3>
+                        <h3>{t('Existing_Quotations')}</h3>
                         {quotes.map(quote => (
                             <div key={quote.id} style={{borderBottom: '1px solid #eee', padding: '1rem'}}>
-                                <strong>Quote #{quote.id}</strong> for {quote.client_name} - Total: ${quote.total_amount.toFixed(2)}
-                                <button onClick={() => generatePdf(quote)} style={{marginLeft: '1rem'}}>PDF</button>
+                                <strong>{t('Quotes')} #{quote.id}</strong> for {quote.client_name} - {t('Total')}: ${quote.total_amount.toFixed(2)}
+                                <button onClick={() => generatePdf(quote)} style={{marginLeft: '1rem'}}>{t('Generate_PDF')}</button>
                             </div>
                         ))}
                     </div>

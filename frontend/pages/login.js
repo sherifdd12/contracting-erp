@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
 export default function LoginPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [logUsername, setLogUsername] = useState('');
     const [logPassword, setLogPassword] = useState('');
@@ -27,10 +29,10 @@ export default function LoginPage() {
             if (typeof window !== 'undefined') {
                 localStorage.setItem('token', response.data.access_token);
             }
-            setMessage('Login successful! Redirecting...');
+            setMessage(`${t('Login')} ${t('Redirecting')}`);
             router.push('/dashboard'); // Redirect to dashboard now
         } catch (error) {
-            setMessage(`Login failed: ${error.response?.data?.detail || error.message}`);
+            setMessage(`${t('Login_failed')}: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -41,14 +43,14 @@ export default function LoginPage() {
                 {message && <p className={styles.message}>{message}</p>}
 
                 <div className={styles.card}>
-                    <h2>Login</h2>
+                    <h2>{t('Login')}</h2>
                     <form onSubmit={handleLogin}>
-                        <input type="text" value={logUsername} onChange={(e) => setLogUsername(e.target.value)} placeholder="Username" required />
-                        <input type="password" value={logPassword} onChange={(e) => setLogPassword(e.target.value)} placeholder="Password" required />
-                        <button type="submit">Login</button>
+                        <input type="text" value={logUsername} onChange={(e) => setLogUsername(e.target.value)} placeholder={t('Username')} required />
+                        <input type="password" value={logPassword} onChange={(e) => setLogPassword(e.target.value)} placeholder={t('Password')} required />
+                        <button type="submit">{t('Login')}</button>
                     </form>
                     <p style={{textAlign: 'center', marginTop: '1rem'}}>
-                        Don't have an account? <Link href="/register">Register here</Link>
+                        {t('Dont_have_account')} <Link href="/register">{t('Register_here')}</Link>
                     </p>
                 </div>
             </main>
