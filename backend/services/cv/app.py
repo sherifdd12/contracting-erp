@@ -47,7 +47,7 @@ async def measure_image(
     try:
         # Read image contents
         contents = await file.read()
-        nparr = np.fromstring(contents, np.uint8)
+        nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if img is None:
@@ -64,10 +64,13 @@ async def measure_image(
         contours, _ = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         if not contours:
-            raise HTTPException(status_code=404, detail="No objects detected in the image.")
+            raise HTTPException(status_code=400, detail="No contours found in image.")
 
         # 5. Find the largest contour by area
-        largest_contour = max(contours, key=cv2.contourArea)
+        try:
+            largest_contour = max(contours, key=cv2.contourArea)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Could not find a main object in contours.")
 
         # 6. Get the bounding box of the largest contour
         x, y, w, h = cv2.boundingRect(largest_contour)
