@@ -5,7 +5,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install system dependencies required by OpenCV
-RUN apt-get update && apt-get install -y libgl1-mesa-glx
+RUN apt-get update && apt-get install -y libgl1
 
 # Copy the requirements file from the backend root and install dependencies.
 # The build context for this Dockerfile is expected to be the `backend` directory.
