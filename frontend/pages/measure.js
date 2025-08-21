@@ -13,6 +13,7 @@ export default function MeasurePage() {
     const [stream, setStream] = useState(null);
     const [detectedCorners, setDetectedCorners] = useState([]);
 
+    // Effect to get the camera stream once
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -23,14 +24,10 @@ export default function MeasurePage() {
         async function getCamera() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment' } // Prefer the rear camera
+                    const mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment' }
                     });
-                    setStream(stream);
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = stream;
-                    }
-                    setMessage('Camera feed active.');
+                    setStream(mediaStream);
                 } catch (error) {
                     console.error("Error accessing camera:", error);
                     setMessage('Could not access camera. Please check permissions.');
@@ -42,13 +39,21 @@ export default function MeasurePage() {
 
         getCamera();
 
-        // Cleanup function to stop the stream when the component unmounts
+        // Cleanup function to stop all tracks of the stream when the component unmounts
         return () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
         };
-    }, [router, stream]); // Added stream to dependencies to handle cleanup correctly
+    }, [router]); // This effect should only run once on mount
+
+    // Effect to attach the stream to the video element when the stream is ready
+    useEffect(() => {
+        if (stream && videoRef.current) {
+            videoRef.current.srcObject = stream;
+            setMessage('Camera feed active.');
+        }
+    }, [stream]);
 
     const cvApiUrl = process.env.NEXT_PUBLIC_CV_API_URL || 'http://localhost:8009';
 
@@ -78,6 +83,10 @@ export default function MeasurePage() {
             setDetectedCorners([]); // Clear previous drawings
 
             canvasRef.current.toBlob(async (blob) => {
+                if (!blob) {
+                    setMessage('Failed to capture frame. Please try again.');
+                    return;
+                }
                 const formData = new FormData();
                 formData.append('file', blob, 'capture.png');
                 const token = localStorage.getItem('token');
