@@ -84,6 +84,9 @@ const Navbar = () => {
             {isLoggedIn && userRole === 'admin' && (
                 <Link href="/hr" style={linkStyle}>{t('HR')}</Link>
             )}
+            {isLoggedIn && userRole === 'admin' && (
+                <Link href="/activity" style={linkStyle}>Activity</Link>
+            )}
             {isLoggedIn && (
                 <button onClick={handleLogout} style={buttonStyle}>{t('Logout')}</button>
             )}

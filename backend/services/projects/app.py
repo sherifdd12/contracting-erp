@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from shared.database import get_db
 from shared.models import Project, User
-from shared.security import get_current_user_payload, TokenPayload
+from shared.security import get_current_user_payload, TokenPayload, oauth2_scheme
+from shared.activity_logger import log_activity
 
 # --- FastAPI App ---
 app = FastAPI()
@@ -51,10 +52,11 @@ def read_root():
     return {"service": "Projects Service", "status": "running"}
 
 @app.post("/projects/", response_model=ProjectOut, status_code=status.HTTP_201_CREATED)
-def create_project(
+async def create_project(
     project: ProjectCreate,
     db: Session = Depends(get_db),
     token_payload: TokenPayload = Depends(get_current_user_payload),
+    token: str = Depends(oauth2_scheme), # Get raw token for logging
 ):
     # Find the user to associate as the manager
     user = db.query(User).filter(User.username == token_payload.sub).first()
@@ -65,6 +67,10 @@ def create_project(
     db.add(new_project)
     db.commit()
     db.refresh(new_project)
+
+    # Log the activity
+    await log_activity(token, action="create_project", details=f"Project '{new_project.name}' created.")
+
     return new_project
 
 @app.get("/projects/", response_model=List[ProjectOut])

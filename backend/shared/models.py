@@ -114,3 +114,15 @@ class QuotationItem(Base):
 
 # Add back-population to Project model
 Project.quotations = relationship("Quotation", back_populates="project")
+
+
+# --- Activity Log Model ---
+class ActivityLog(Base):
+    __tablename__ = 'activity_logs'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    action = Column(String(100), nullable=False)
+    details = Column(Text) # Can store JSON as string
+    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship('User')

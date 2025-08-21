@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from shared.database import get_db
 from shared.models import Task, Project, User
-from shared.security import get_current_user_payload, TokenPayload
+from shared.security import get_current_user_payload, TokenPayload, oauth2_scheme
+from shared.activity_logger import log_activity
 
 # --- FastAPI App ---
 app = FastAPI()
@@ -88,27 +89,36 @@ def get_tasks_for_project(
     return tasks
 
 @app.put("/tasks/{task_id}/status", response_model=TaskOut)
-def update_task_status(
+async def update_task_status(
     task_id: int,
     task_update: TaskUpdate,
     db: Session = Depends(get_db),
-    token: TokenPayload = Depends(get_current_user_payload),
+    token_payload: TokenPayload = Depends(get_current_user_payload),
+    token: str = Depends(oauth2_scheme), # Get raw token for logging
 ):
     db_task = db.query(Task).filter(Task.id == task_id).first()
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found.")
 
     # Authorization: Check if user is assignee, manager, or admin
-    user = db.query(User).filter(User.username == token.sub).first()
+    user = db.query(User).filter(User.username == token_payload.sub).first()
     if not user:
         raise HTTPException(status_code=404, detail="Current user not found.")
 
     if (db_task.assigned_to_id != user.id and
         db_task.project.manager_id != user.id and
-        token.role != "admin"):
+        token_payload.role != "admin"):
         raise HTTPException(status_code=403, detail="Not authorized to update this task.")
 
     db_task.status = task_update.status
     db.commit()
     db.refresh(db_task)
+
+    # Log the activity
+    await log_activity(
+        token,
+        action="update_task_status",
+        details=f"Status of task {db_task.id} ('{db_task.description[:20]}...') changed to '{db_task.status}'."
+    )
+
     return db_task

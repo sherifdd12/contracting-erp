@@ -31,6 +31,7 @@ services:
     environment:
       # Non-sensitive variables can remain here
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+      - ACTIVITY_SERVICE_URL=http://activity:80/activities/
     depends_on:
       - postgres
     restart: unless-stopped
@@ -47,6 +48,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+      - ACTIVITY_SERVICE_URL=http://activity:80/activities/
     depends_on:
       - postgres
     restart: unless-stopped
@@ -63,6 +65,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+      - ACTIVITY_SERVICE_URL=http://activity:80/activities/
     depends_on:
       - postgres
     restart: unless-stopped
@@ -79,6 +82,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+      - ACTIVITY_SERVICE_URL=http://activity:80/activities/
     depends_on:
       - postgres
     restart: unless-stopped
@@ -95,6 +99,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+      - ACTIVITY_SERVICE_URL=http://activity:80/activities/
     depends_on:
       - postgres
     restart: unless-stopped
@@ -111,6 +116,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+      - ACTIVITY_SERVICE_URL=http://activity:80/activities/
     depends_on:
       - postgres
     restart: unless-stopped
@@ -123,6 +129,22 @@ services:
       dockerfile: services/analytics/Dockerfile
     ports:
       - "8007:80"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Activity Backend Service
+  activity:
+    container_name: contracting_activity
+    build:
+      context: ./backend
+      dockerfile: services/activity/Dockerfile
+    ports:
+      - "8008:80"
     env_file:
       - .env
     environment:
@@ -147,6 +169,7 @@ services:
       - NEXT_PUBLIC_TASKS_API_URL=http://localhost:8005
       - NEXT_PUBLIC_QUOTES_API_URL=http://localhost:8006
       - NEXT_PUBLIC_ANALYTICS_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_ACTIVITY_API_URL=http://localhost:8008
     depends_on:
       - auth
       - projects
@@ -155,6 +178,7 @@ services:
       - tasks
       - quotes
       - analytics
+      - activity
     restart: unless-stopped
 
 # Define the named volume for persisting database data
