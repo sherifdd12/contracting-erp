@@ -14,7 +14,8 @@
     "next": "14.2.3",
     "axios": "^1.7.2",
     "jwt-decode": "^4.0.0",
-    "jspdf": "^2.5.1"
+    "jspdf": "^2.5.1",
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
     "eslint": "^8",
