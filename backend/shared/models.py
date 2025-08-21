@@ -85,3 +85,32 @@ class LeaveRequest(Base):
 
 # Add back-population to User model
 User.employee_profile = relationship("Employee", uselist=False, back_populates="user")
+
+
+# --- Quotation Models ---
+class Quotation(Base):
+    __tablename__ = 'quotations'
+    id = Column(Integer, primary_key=True)
+    client_name = Column(String(100), nullable=False)
+    status = Column(String(50), default='draft') # e.g., draft, sent, accepted, rejected
+    total_amount = Column(Float, nullable=False)
+    created_date = Column(DateTime, default=datetime.utcnow)
+    project_id = Column(Integer, ForeignKey('projects.id'))
+    created_by_id = Column(Integer, ForeignKey('users.id'))
+
+    project = relationship('Project')
+    created_by = relationship('User')
+    items = relationship('QuotationItem', back_populates='quotation', cascade="all, delete-orphan")
+
+class QuotationItem(Base):
+    __tablename__ = 'quotation_items'
+    id = Column(Integer, primary_key=True)
+    quotation_id = Column(Integer, ForeignKey('quotations.id'), nullable=False)
+    description = Column(Text, nullable=False)
+    quantity = Column(Float, nullable=False)
+    unit_price = Column(Float, nullable=False)
+
+    quotation = relationship('Quotation', back_populates='items')
+
+# Add back-population to Project model
+Project.quotations = relationship("Quotation", back_populates="project")

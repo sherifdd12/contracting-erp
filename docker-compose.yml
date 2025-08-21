@@ -99,6 +99,22 @@ services:
       - postgres
     restart: unless-stopped
 
+  # Quotes Backend Service
+  quotes:
+    container_name: contracting_quotes
+    build:
+      context: ./backend
+      dockerfile: services/quotes/Dockerfile
+    ports:
+      - "8006:80"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/contracting_db
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
   # Frontend Web Application Service
   frontend:
     container_name: contracting_frontend
@@ -113,12 +129,14 @@ services:
       - NEXT_PUBLIC_ACCOUNTING_API_URL=http://localhost:8003
       - NEXT_PUBLIC_HR_API_URL=http://localhost:8004
       - NEXT_PUBLIC_TASKS_API_URL=http://localhost:8005
+      - NEXT_PUBLIC_QUOTES_API_URL=http://localhost:8006
     depends_on:
       - auth
       - projects
       - accounting
       - hr
       - tasks
+      - quotes
     restart: unless-stopped
 
 # Define the named volume for persisting database data

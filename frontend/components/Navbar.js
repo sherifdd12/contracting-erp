@@ -67,6 +67,9 @@ const Navbar = () => {
             {isLoggedIn && (
                 <Link href="/projects" style={linkStyle}>Projects</Link>
             )}
+            {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && (
+                <Link href="/quotes" style={linkStyle}>Quotes</Link>
+            )}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && (
                 <Link href="/accounting" style={linkStyle}>Accounting</Link>
             )}
