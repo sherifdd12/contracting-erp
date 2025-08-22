@@ -1,10 +1,8 @@
 import os
 import sys
-import shutil
 from typing import List
-from datetime import datetime
 
-from fastapi import Depends, FastAPI, HTTPException, status, File, UploadFile, Form
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -12,7 +10,7 @@ from sqlalchemy.orm import Session
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from shared.database import get_db
-from shared.models import Project, User, SavedMeasurement
+from shared.models import Project, User
 from shared.security import get_current_user_payload, TokenPayload, oauth2_scheme
 from shared.activity_logger import log_activity
 
@@ -44,18 +42,6 @@ class ProjectOut(BaseModel):
     description: str | None = None
     budget: float
     manager_id: int | None = None
-
-    class Config:
-        orm_mode = True
-
-class SavedMeasurementOut(BaseModel):
-    id: int
-    project_id: int
-    description: str
-    width_cm: float
-    height_cm: float
-    image_path: str
-    created_at: datetime
 
     class Config:
         orm_mode = True
@@ -146,44 +132,3 @@ def delete_project(
     db.delete(project)
     db.commit()
     return None
-
-@app.post("/projects/{project_id}/measurements/", response_model=SavedMeasurementOut, status_code=status.HTTP_201_CREATED)
-async def create_measurement_for_project(
-    project_id: int,
-    description: str = Form(...),
-    width_cm: float = Form(...),
-    height_cm: float = Form(...),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    token_payload: TokenPayload = Depends(get_current_user_payload),
-):
-    # Verify project exists
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # Define upload path and save the file
-    upload_dir = "/app/uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-
-    # Sanitize filename and create a unique path
-    file_extension = os.path.splitext(image.filename)[1]
-    unique_filename = f"{project_id}_{datetime.utcnow().timestamp()}{file_extension}"
-    file_path = os.path.join(upload_dir, unique_filename)
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
-
-    # Create database record
-    new_measurement = SavedMeasurement(
-        project_id=project_id,
-        description=description,
-        width_cm=width_cm,
-        height_cm=height_cm,
-        image_path=file_path  # Save path relative to the container
-    )
-    db.add(new_measurement)
-    db.commit()
-    db.refresh(new_measurement)
-
-    return new_measurement

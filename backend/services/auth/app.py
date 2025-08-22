@@ -22,6 +22,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "a-very-secret-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+# Create tables on startup (only the auth service should be responsible for this)
+Base.metadata.create_all(bind=engine)
+
 # --- Pydantic Schemas ---
 class UserCreate(BaseModel):
     username: str
@@ -48,12 +51,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # --- FastAPI App ---
 app = FastAPI()
-
-@app.on_event("startup")
-def on_startup():
-    # Create tables on startup (only the auth service should be responsible for this)
-    # This is moved here to prevent it from running during test collection
-    Base.metadata.create_all(bind=engine)
 
 # --- CORS Middleware ---
 origins = [

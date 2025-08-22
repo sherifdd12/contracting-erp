@@ -8,4 +8,3 @@ python-jose[cryptography]
 python-multipart
 httpx
 opencv-python-headless
-pytest
