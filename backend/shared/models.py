@@ -65,9 +65,14 @@ class Employee(Base):
     __tablename__ = 'employees'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
+    full_name = Column(String(100))
     job_title = Column(String(100))
+    phone_number = Column(String(50))
+    address = Column(Text)
     hire_date = Column(DateTime, default=datetime.utcnow)
     salary = Column(Float)
+    emergency_contact_name = Column(String(100))
+    emergency_contact_phone = Column(String(50))
 
     user = relationship('User', back_populates='employee_profile')
     leave_requests = relationship('LeaveRequest', back_populates='employee')

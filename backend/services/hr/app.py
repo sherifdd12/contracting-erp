@@ -30,15 +30,25 @@ app.add_middleware(
 # --- Pydantic Schemas ---
 class EmployeeCreate(BaseModel):
     user_id: int
+    full_name: str
     job_title: str
+    phone_number: str | None = None
+    address: str | None = None
     salary: float
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
 
 class EmployeeOut(BaseModel):
     id: int
     user_id: int
+    full_name: str
     job_title: str
+    phone_number: str | None = None
+    address: str | None = None
     hire_date: datetime
     salary: float
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
     class Config: orm_mode = True
 
 class LeaveRequestCreate(BaseModel):
@@ -123,3 +133,46 @@ def update_leave_request_status(
     db.commit()
     db.refresh(db_request)
     return db_request
+
+@app.get("/employees/me", response_model=EmployeeOut)
+def get_my_employee_profile(
+    db: Session = Depends(get_db),
+    token: TokenPayload = Depends(get_current_user_payload),
+):
+    user = db.query(User).filter(User.username == token.sub).first()
+    if not user or not user.employee_profile:
+        raise HTTPException(status_code=404, detail="Employee profile not found for current user.")
+    return user.employee_profile
+
+@app.get("/leave-requests/me", response_model=List[LeaveRequestOut])
+def get_my_leave_requests(
+    db: Session = Depends(get_db),
+    token: TokenPayload = Depends(get_current_user_payload),
+):
+    user = db.query(User).filter(User.username == token.sub).first()
+    if not user or not user.employee_profile:
+        raise HTTPException(status_code=404, detail="Employee profile not found for current user.")
+
+    return user.employee_profile.leave_requests
+
+@app.put("/employees/{employee_id}", response_model=EmployeeOut)
+def update_employee_profile(
+    employee_id: int,
+    employee_update: EmployeeCreate, # Re-using create schema for full updates
+    db: Session = Depends(get_db),
+    token: TokenPayload = Depends(get_current_user_payload),
+):
+    if token.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can update employee profiles.")
+
+    db_employee = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not db_employee:
+        raise HTTPException(status_code=404, detail="Employee not found.")
+
+    # Update fields
+    for key, value in employee_update.dict().items():
+        setattr(db_employee, key, value)
+
+    db.commit()
+    db.refresh(db_employee)
+    return db_employee

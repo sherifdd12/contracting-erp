@@ -193,9 +193,9 @@ export default function AccountingPage() {
                 <div className={styles.grid}>
                     {/* Left Column: Chart of Accounts Management */}
                     <div className={styles.card} style={{width: '100%', maxWidth: '600px'}}>
-                        <h3>Chart of Accounts</h3>
+                        <h3>{t('Chart_of_Accounts')}</h3>
                         <table style={{width: '100%', textAlign: 'left'}}>
-                            <thead><tr><th>Name</th><th>Type</th><th>Balance</th></tr></thead>
+                            <thead><tr><th>{t('Account_Name')}</th><th>{t('Type')}</th><th>{t('Balance')}</th></tr></thead>
                             <tbody>
                                 {accounts.map((acc) => (
                                     <tr key={acc.id}><td>{acc.name}</td><td>{acc.type}</td><td>${acc.balance.toFixed(2)}</td></tr>
@@ -203,42 +203,42 @@ export default function AccountingPage() {
                             </tbody>
                         </table>
                         <hr style={{margin: '2rem 0'}} />
-                        <h4>Create New Account</h4>
+                        <h4>{t('Create_New_Account')}</h4>
                         <form onSubmit={handleCreateAccount}>
-                            <input type="text" value={accName} onChange={e => setAccName(e.target.value)} placeholder="Account Name" required/>
+                            <input type="text" value={accName} onChange={e => setAccName(e.target.value)} placeholder={t('Account_Name')} required/>
                             <select value={accType} onChange={e => setAccType(e.target.value)}>
                                 <option>Asset</option><option>Liability</option><option>Equity</option><option>Revenue</option><option>Expense</option>
                             </select>
                             <select value={accNormalBalance} onChange={e => setAccNormalBalance(e.target.value)}>
-                                <option>debit</option><option>credit</option>
+                                <option value="debit">{t('Debit')}</option><option value="credit">{t('Credit')}</option>
                             </select>
-                            <button type="submit">Create Account</button>
+                            <button type="submit">{t('Create_Account')}</button>
                         </form>
                     </div>
 
                     {/* Right Column: Manual Journal Entry */}
                     <div className={styles.card} style={{width: '100%', maxWidth: '600px'}}>
-                        <h3>Manual Journal Entry</h3>
+                        <h3>{t('Manual_Journal_Entry')}</h3>
                         <form onSubmit={handleCreateJournalEntry}>
-                            <input type="text" value={journalDesc} onChange={e => setJournalDesc(e.target.value)} placeholder="Entry Description" required/>
+                            <input type="text" value={journalDesc} onChange={e => setJournalDesc(e.target.value)} placeholder={t('Entry_Description')} required/>
                             {journalLines.map((line, index) => (
                                 <div key={index} style={{display: 'flex', gap: '0.5rem', marginBottom: '0.5rem'}}>
                                     <select name="account_id" value={line.account_id} onChange={e => handleJournalLineChange(index, e)} required>
-                                        <option value="">-- Select Account --</option>
+                                        <option value="">{t('Select_Account')}</option>
                                         {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                                     </select>
                                     <select name="type" value={line.type} onChange={e => handleJournalLineChange(index, e)}>
-                                        <option>debit</option><option>credit</option>
+                                        <option value="debit">{t('Debit')}</option><option value="credit">{t('Credit')}</option>
                                     </select>
-                                    <input type="number" name="amount" step="0.01" value={line.amount} onChange={e => handleJournalLineChange(index, e)} placeholder="Amount" required />
+                                    <input type="number" name="amount" step="0.01" value={line.amount} onChange={e => handleJournalLineChange(index, e)} placeholder={t('Amount')} required />
                                     <button type="button" onClick={() => removeJournalLine(index)}>X</button>
                                 </div>
                             ))}
-                            <button type="button" onClick={addJournalLine}>Add Line</button>
+                            <button type="button" onClick={addJournalLine}>{t('Add_Line')}</button>
                             <div style={{marginTop: '1rem', fontWeight: 'bold'}}>
-                                Debits: ${totalDebits.toFixed(2)} | Credits: ${totalCredits.toFixed(2)}
+                                {t('Debits')}: ${totalDebits.toFixed(2)} | {t('Credits')}: ${totalCredits.toFixed(2)}
                             </div>
-                            <button type="submit" style={{marginTop: '1rem'}} disabled={totalDebits !== totalCredits || totalDebits === 0}>Post Entry</button>
+                            <button type="submit" style={{marginTop: '1rem'}} disabled={totalDebits !== totalCredits || totalDebits === 0}>{t('Post_Entry')}</button>
                         </form>
                     </div>
                 </div>

@@ -85,6 +85,7 @@ const Navbar = () => {
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/reports" style={linkStyle}>{t('Reports')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={linkStyle}>{t('HR')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/activity" style={linkStyle}>Activity</Link>}
+            {isLoggedIn && <Link href="/profile" style={linkStyle}>{t('My_Profile')}</Link>}
             {isLoggedIn && <button onClick={handleLogout} style={buttonStyle}>{t('Logout')}</button>}
             <button onClick={handleLanguageSwitch} style={{...buttonStyle, marginLeft: '1rem'}}>{i18n.language === 'en' ? 'عربي' : 'English'}</button>
         </div>
@@ -100,6 +101,7 @@ const Navbar = () => {
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/reports" style={mobileLinkStyle}>{t('Reports')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={mobileLinkStyle}>{t('HR')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/activity" style={mobileLinkStyle}>Activity</Link>}
+            {isLoggedIn && <Link href="/profile" style={mobileLinkStyle}>{t('My_Profile')}</Link>}
             {isLoggedIn && <button onClick={handleLogout} style={{...buttonStyle, ...mobileLinkStyle}}>{t('Logout')}</button>}
             <button onClick={handleLanguageSwitch} style={{...buttonStyle, ...mobileLinkStyle}}>{i18n.language === 'en' ? 'عربي' : 'English'}</button>
         </div>
