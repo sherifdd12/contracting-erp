@@ -18,6 +18,8 @@ export default function MeasurePage() {
     const [projects, setProjects] = useState([]);
     const [selectedProject, setSelectedProject] = useState('');
     const [description, setDescription] = useState('');
+    const [referenceType, setReferenceType] = useState('A4_PAPER');
+    const [displayUnit, setDisplayUnit] = useState('cm');
 
     useEffect(() => {
         setIsClient(true);
@@ -109,6 +111,7 @@ export default function MeasurePage() {
                 }
                 const formData = new FormData();
                 formData.append('file', blob, 'capture.png');
+                formData.append('reference_type', referenceType);
                 const token = localStorage.getItem('token');
 
                 try {
@@ -180,10 +183,17 @@ export default function MeasurePage() {
                     <div style={{border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem', borderRadius: '8px', background: '#f9f9f9'}}>
                         <strong>Instructions:</strong>
                         <ol style={{margin: '0.5rem 0 0 1.5rem', padding: 0}}>
-                            <li>Place a standard A4 sheet of paper on the same flat surface as the object you want to measure.</li>
-                            <li>Ensure both the A4 paper and the target object are fully visible in the camera feed.</li>
-                            <li>Click "Capture Frame" to measure the object.</li>
+                            <li>Select your reference object from the dropdown below.</li>
+                            <li>Place the chosen reference object on the same flat surface as the object you want to measure.</li>
+                            <li>Ensure both objects are fully visible, then click "Capture Frame".</li>
                         </ol>
+                        <div style={{marginTop: '1rem'}}>
+                            <label htmlFor="referenceType" style={{marginRight: '10px'}}>Reference Object:</label>
+                            <select id="referenceType" value={referenceType} onChange={e => setReferenceType(e.target.value)}>
+                                <option value="A4_PAPER">A4 Paper</option>
+                                <option value="CREDIT_CARD">Credit Card</option>
+                            </select>
+                        </div>
                     </div>
                     <video ref={videoRef} autoPlay playsInline style={{width: '100%', borderRadius: '8px'}}></video>
                     <canvas ref={canvasRef} style={{display: 'none'}}></canvas>
@@ -193,12 +203,19 @@ export default function MeasurePage() {
                     {measurement_mm.width > 0 && (
                         <div style={{marginTop: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '8px'}}>
                             <h4>Measurement Result</h4>
-                            <p>
-                                Width: <strong>{(measurement_mm.width / 10).toFixed(2)} cm</strong> / <strong>{(measurement_mm.width / 25.4).toFixed(2)} inches</strong>
-                            </p>
-                            <p>
-                                Height: <strong>{(measurement_mm.height / 10).toFixed(2)} cm</strong> / <strong>{(measurement_mm.height / 25.4).toFixed(2)} inches</strong>
-                            </p>
+                            <div>
+                                <p style={{display: 'inline-block', marginRight: '20px'}}>
+                                    Width: <strong>{displayUnit === 'cm' ? (measurement_mm.width / 10).toFixed(2) : (measurement_mm.width / 25.4).toFixed(2)} {displayUnit}</strong>
+                                </p>
+                                <p style={{display: 'inline-block'}}>
+                                    Height: <strong>{displayUnit === 'cm' ? (measurement_mm.height / 10).toFixed(2) : (measurement_mm.height / 25.4).toFixed(2)} {displayUnit}</strong>
+                                </p>
+                            </div>
+                            <div>
+                                <button onClick={() => setDisplayUnit('cm')} style={{marginRight: '10px', fontWeight: displayUnit === 'cm' ? 'bold' : 'normal'}}>Show in cm</button>
+                                <button onClick={() => setDisplayUnit('in')} style={{fontWeight: displayUnit === 'in' ? 'bold' : 'normal'}}>Show in inches</button>
+                            </div>
+                            <hr style={{margin: '1rem 0'}}/>
                             <div style={{marginTop: '1rem'}}>
                                 <textarea
                                     value={description}

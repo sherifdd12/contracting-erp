@@ -21,7 +21,6 @@ class User(Base):
     role = Column(String(50), nullable=False)
 
     tasks = relationship("Task", back_populates="assignee")
-    employee_profile = relationship("Employee", uselist=False, back_populates="user")
 
 class Project(Base):
     __tablename__ = 'projects'
@@ -66,6 +65,7 @@ class Employee(Base):
     __tablename__ = 'employees'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
+    full_name = Column(String(100))
     job_title = Column(String(100))
     phone_number = Column(String(50))
     address = Column(Text)
@@ -87,6 +87,9 @@ class LeaveRequest(Base):
     status = Column(String(50), default='pending') # e.g., pending, approved, rejected
 
     employee = relationship('Employee', back_populates='leave_requests')
+
+# Add back-population to User model
+User.employee_profile = relationship("Employee", uselist=False, back_populates="user")
 
 
 # --- Quotation Models ---
@@ -187,20 +190,3 @@ class Bill(Base):
     status = Column(String(50), default='unpaid') # unpaid, paid
 
     vendor = relationship('Vendor', back_populates='bills')
-
-
-# --- Measurement Model ---
-class SavedMeasurement(Base):
-    __tablename__ = 'saved_measurements'
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
-    description = Column(Text, nullable=False)
-    width_cm = Column(Float, nullable=False)
-    height_cm = Column(Float, nullable=False)
-    image_path = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    project = relationship('Project', back_populates='measurements')
-
-# Add back-population to Project model
-Project.measurements = relationship("SavedMeasurement", back_populates="project")
