@@ -21,6 +21,7 @@ class User(Base):
     role = Column(String(50), nullable=False)
 
     tasks = relationship("Task", back_populates="assignee")
+    employee_profile = relationship("Employee", uselist=False, back_populates="user")
 
 class Project(Base):
     __tablename__ = 'projects'
@@ -87,9 +88,6 @@ class LeaveRequest(Base):
     status = Column(String(50), default='pending') # e.g., pending, approved, rejected
 
     employee = relationship('Employee', back_populates='leave_requests')
-
-# Add back-population to User model
-User.employee_profile = relationship("Employee", uselist=False, back_populates="user")
 
 
 # --- Quotation Models ---

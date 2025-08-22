@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { jwtDecode } from 'jwt-decode';
 import styles from '../styles/Home.module.css';
 import Navbar from '../components/Navbar';
 
@@ -13,6 +14,7 @@ export default function ProjectsPage() {
     const [selectedProject, setSelectedProject] = useState(null); // To show tasks for
     const [tasks, setTasks] = useState([]);
     const [message, setMessage] = useState('');
+    const [userRole, setUserRole] = useState(null);
 
     // Form state for creating a new project
     const [name, setName] = useState('');
@@ -27,10 +29,21 @@ export default function ProjectsPage() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/login'); // Redirect to login page if no token
-        } else {
+            router.push('/login');
+            return;
+        }
+
+        try {
+            const decodedToken = jwtDecode(token);
+            setUserRole(decodedToken.role);
             fetchProjects(token);
-            fetchUsers(token);
+            // Only fetch the full user list if the user is an admin
+            if (decodedToken.role === 'admin') {
+                fetchUsers(token);
+            }
+        } catch (error) {
+            // Invalid token, redirect to login
+            router.push('/login');
         }
     }, [router]);
 
@@ -173,18 +186,22 @@ export default function ProjectsPage() {
                                 {tasks.length > 0 ? (
                                     <ul style={{listStyle: 'none', padding: 0}}>{tasks.map(task => <li key={task.id} style={{padding: '0.5rem', borderBottom: '1px solid #eee'}}>{task.description} <span style={{color: '#888'}}>({task.status})</span></li>)}</ul>
                                 ) : <p>{t('No_tasks_for_project')}</p>}
-                                <hr style={{margin: '2rem 0'}}/>
-                                <h4>{t('Add_Task')}</h4>
-                                <form onSubmit={handleCreateTask}>
-                                    <textarea value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder={t('Task_description')} required></textarea>
-                                    <select value={taskAssignee} onChange={(e) => setTaskAssignee(e.target.value)} required>
-                                        <option value="">{t('Assign_to')}</option>
-                                        {users.map(user => (
-                                            <option key={user.id} value={user.id}>{user.username}</option>
-                                        ))}
-                                    </select>
-                                    <button type="submit">{t('Add_Task')}</button>
-                                </form>
+                                {userRole === 'admin' && (
+                                    <>
+                                        <hr style={{margin: '2rem 0'}}/>
+                                        <h4>{t('Add_Task')}</h4>
+                                        <form onSubmit={handleCreateTask}>
+                                            <textarea value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} placeholder={t('Task_description')} required></textarea>
+                                            <select value={taskAssignee} onChange={(e) => setTaskAssignee(e.target.value)} required>
+                                                <option value="">{t('Assign_to')}</option>
+                                                {users.map(user => (
+                                                    <option key={user.id} value={user.id}>{user.username}</option>
+                                                ))}
+                                            </select>
+                                            <button type="submit">{t('Add_Task')}</button>
+                                        </form>
+                                    </>
+                                )}
                             </>
                         ) : <p>{t('Select_project_to_view_tasks')}</p>}
                     </div>
