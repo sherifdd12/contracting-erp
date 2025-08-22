@@ -14,7 +14,10 @@ export default function MeasurePage() {
     const [stream, setStream] = useState(null);
     const [detectedCorners, setDetectedCorners] = useState([]);
     const [isClient, setIsClient] = useState(false);
-    const [measurement, setMeasurement] = useState({ width: 0, height: 0 });
+    const [measurement_mm, setMeasurement_mm] = useState({ width: 0, height: 0 });
+    const [projects, setProjects] = useState([]);
+    const [selectedProject, setSelectedProject] = useState('');
+    const [description, setDescription] = useState('');
 
     useEffect(() => {
         setIsClient(true);
@@ -54,6 +57,22 @@ export default function MeasurePage() {
                 mediaStream.getTracks().forEach(track => track.stop());
             }
         };
+        const fetchProjects = async (token) => {
+            try {
+                const projectsApiUrl = process.env.NEXT_PUBLIC_PROJECTS_API_URL || 'http://localhost:8002';
+                const response = await axios.get(`${projectsApiUrl}/projects/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setProjects(response.data);
+            } catch (error) {
+                console.error("Failed to fetch projects", error);
+            }
+        };
+
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetchProjects(token);
+        }
     }, []); // Empty dependency array ensures this runs only on mount and unmount
 
     const cvApiUrl = process.env.NEXT_PUBLIC_CV_API_URL || 'http://localhost:8009';
@@ -99,15 +118,50 @@ export default function MeasurePage() {
                             'Authorization': `Bearer ${token}`,
                         },
                     });
-                    const { corners, width, height, message: responseMessage } = response.data;
+                    const { corners, width_mm, height_mm, message: responseMessage } = response.data;
                     setMessage(responseMessage);
                     setDetectedCorners(corners);
-                    setMeasurement({ width, height });
+                    setMeasurement_mm({ width: width_mm, height: height_mm });
                 } catch (error) {
                     setMessage(`Failed to get measurement: ${error.response?.data?.detail || 'Server error'}`);
                 }
             }, 'image/png');
         }
+    };
+
+    const handleSaveMeasurement = async () => {
+        if (!selectedProject || !description || !measurement_mm.width) {
+            setMessage('Please select a project, add a description, and perform a measurement first.');
+            return;
+        }
+
+        canvasRef.current.toBlob(async (blob) => {
+            if (!blob) {
+                setMessage('Could not retrieve captured image. Please capture again.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('image', blob, 'measurement.png');
+            formData.append('project_id', selectedProject);
+            formData.append('description', description);
+            formData.append('width_cm', (measurement_mm.width / 10).toFixed(2));
+            formData.append('height_cm', (measurement_mm.height / 10).toFixed(2));
+
+            const token = localStorage.getItem('token');
+            const projectsApiUrl = process.env.NEXT_PUBLIC_PROJECTS_API_URL || 'http://localhost:8002';
+
+            try {
+                await axios.post(`${projectsApiUrl}/projects/${selectedProject}/measurements/`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                setMessage('Measurement saved successfully!');
+            } catch (error) {
+                setMessage(`Failed to save measurement: ${error.response?.data?.detail || 'Server error'}`);
+            }
+        }, 'image/png');
     };
 
     if (!isClient) {
@@ -123,19 +177,49 @@ export default function MeasurePage() {
 
                 <div className={styles.card} style={{width: '100%', maxWidth: '800px'}}>
                     <h3>Live Camera Feed</h3>
+                    <div style={{border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem', borderRadius: '8px', background: '#f9f9f9'}}>
+                        <strong>Instructions:</strong>
+                        <ol style={{margin: '0.5rem 0 0 1.5rem', padding: 0}}>
+                            <li>Place a standard A4 sheet of paper on the same flat surface as the object you want to measure.</li>
+                            <li>Ensure both the A4 paper and the target object are fully visible in the camera feed.</li>
+                            <li>Click "Capture Frame" to measure the object.</li>
+                        </ol>
+                    </div>
                     <video ref={videoRef} autoPlay playsInline style={{width: '100%', borderRadius: '8px'}}></video>
                     <canvas ref={canvasRef} style={{display: 'none'}}></canvas>
                     <button onClick={handleCapture} style={{width: '100%', marginTop: '1rem'}}>
                         Capture Frame
                     </button>
-                    {measurement.width > 0 && (
+                    {measurement_mm.width > 0 && (
                         <div style={{marginTop: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '8px'}}>
                             <h4>Measurement Result</h4>
-                            <p>Detected object dimensions: <strong>{measurement.width} x {measurement.height} pixels</strong>.</p>
-                            <p style={{fontSize: '0.9rem', color: '#666'}}>Note: This is a prototype. To get real-world units (e.g., cm, inches), a reference object of a known size would be needed in the frame.</p>
+                            <p>
+                                Width: <strong>{(measurement_mm.width / 10).toFixed(2)} cm</strong> / <strong>{(measurement_mm.width / 25.4).toFixed(2)} inches</strong>
+                            </p>
+                            <p>
+                                Height: <strong>{(measurement_mm.height / 10).toFixed(2)} cm</strong> / <strong>{(measurement_mm.height / 25.4).toFixed(2)} inches</strong>
+                            </p>
                             <div style={{marginTop: '1rem'}}>
-                                <select disabled style={{width: 'calc(50% - 0.5rem)', marginRight: '1rem'}}><option>Assign to Project (Future)</option></select>
-                                <button disabled style={{width: 'calc(50% - 0.5rem)'}}>Save Measurement (Future)</button>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Add a description for this measurement..."
+                                    style={{width: '100%', minHeight: '60px', marginBottom: '1rem'}}
+                                />
+                                <select
+                                    value={selectedProject}
+                                    onChange={(e) => setSelectedProject(e.target.value)}
+                                    style={{width: 'calc(50% - 0.5rem)', marginRight: '1rem'}}
+                                >
+                                    <option value="">-- Select a Project --</option>
+                                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                </select>
+                                <button
+                                    onClick={handleSaveMeasurement}
+                                    style={{width: 'calc(50% - 0.5rem)'}}
+                                >
+                                    Save Measurement
+                                </button>
                             </div>
                         </div>
                     )}

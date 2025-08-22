@@ -75,7 +75,7 @@ export default function ProfilePage() {
                         <h3>My Profile</h3>
                         {profile ? (
                             <div>
-                                <p><strong>Name:</strong> {profile.name}</p>
+                                <p><strong>Username:</strong> {profile.username}</p>
                                 <p><strong>Job Title:</strong> {profile.job_title}</p>
                                 <p><strong>Salary:</strong> ${profile.salary}</p>
                                 <p><strong>Hire Date:</strong> {new Date(profile.hire_date).toLocaleDateString()}</p>

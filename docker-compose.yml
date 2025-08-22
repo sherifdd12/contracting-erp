@@ -42,6 +42,8 @@ services:
     build:
       context: ./backend
       dockerfile: services/projects/Dockerfile
+    volumes:
+      - uploads_data:/app/uploads
     ports:
       - "8002:80"
     env_file:
@@ -202,3 +204,4 @@ services:
 # Define the named volume for persisting database data
 volumes:
   postgres_data:
+  uploads_data:

@@ -6,7 +6,7 @@ from datetime import datetime
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -30,7 +30,7 @@ app.add_middleware(
 # --- Pydantic Schemas ---
 class EmployeeCreate(BaseModel):
     user_id: int
-    name: str
+    # Name will be derived from the associated User
     job_title: str
     phone_number: str | None = None
     address: str | None = None
@@ -41,7 +41,7 @@ class EmployeeCreate(BaseModel):
 class EmployeeOut(BaseModel):
     id: int
     user_id: int
-    name: str
+    username: str
     job_title: str
     phone_number: str | None = None
     address: str | None = None
@@ -87,7 +87,10 @@ def create_employee_profile(
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
-    return db_employee
+
+    employee_data = db_employee.__dict__
+    employee_data['username'] = db_user.username
+    return employee_data
 
 @app.post("/leave-requests/", response_model=LeaveRequestOut, status_code=status.HTTP_201_CREATED)
 def create_leave_request(
@@ -139,10 +142,14 @@ def get_my_employee_profile(
     db: Session = Depends(get_db),
     token: TokenPayload = Depends(get_current_user_payload),
 ):
-    user = db.query(User).filter(User.username == token.sub).first()
+    user = db.query(User).options(joinedload(User.employee_profile)).filter(User.username == token.sub).first()
     if not user or not user.employee_profile:
         raise HTTPException(status_code=404, detail="Employee profile not found for current user.")
-    return user.employee_profile
+
+    # Manually construct response to include username from the related User object
+    employee_data = user.employee_profile.__dict__
+    employee_data['username'] = user.username
+    return employee_data
 
 @app.get("/leave-requests/me", response_model=List[LeaveRequestOut])
 def get_my_leave_requests(
@@ -175,4 +182,7 @@ def update_employee_profile(
 
     db.commit()
     db.refresh(db_employee)
-    return db_employee
+
+    employee_data = db_employee.__dict__
+    employee_data['username'] = db_employee.user.username
+    return employee_data
