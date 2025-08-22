@@ -1,5 +1,5 @@
-# Use an official Python runtime as a parent image
-FROM python:3.12-slim
+# Use the full Python image to ensure all system dependencies for OpenCV are present
+FROM python:3.12
 
 # Set the working directory in the container
 WORKDIR /app
