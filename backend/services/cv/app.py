@@ -32,6 +32,8 @@ class Point(BaseModel):
 
 class MeasurementOut(BaseModel):
     corners: List[Point]
+    width: int
+    height: int
     message: str
 
 # --- API Endpoints ---
@@ -85,7 +87,9 @@ async def measure_image(
 
         return MeasurementOut(
             corners=corners,
-            message="Successfully detected the largest object."
+            width=w,
+            height=h,
+            message=f"Successfully detected an object with dimensions {w}x{h} pixels."
         )
 
     except Exception as e:

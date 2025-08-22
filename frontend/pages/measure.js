@@ -14,26 +14,29 @@ export default function MeasurePage() {
     const [stream, setStream] = useState(null);
     const [detectedCorners, setDetectedCorners] = useState([]);
     const [isClient, setIsClient] = useState(false);
+    const [measurement, setMeasurement] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
         setIsClient(true);
-    }, []);
+        let mediaStream = null;
 
-    // Effect to get the camera stream once
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/login');
-            return;
-        }
+        const getCamera = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                router.push('/login');
+                return;
+            }
 
-        async function getCamera() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
-                    const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    mediaStream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: 'environment' }
                     });
                     setStream(mediaStream);
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = mediaStream;
+                        setMessage('Camera feed active.');
+                    }
                 } catch (error) {
                     console.error("Error accessing camera:", error);
                     setMessage('Could not access camera. Please check permissions.');
@@ -41,25 +44,17 @@ export default function MeasurePage() {
             } else {
                 setMessage('Your browser does not support camera access.');
             }
-        }
+        };
 
         getCamera();
 
         // Cleanup function to stop all tracks of the stream when the component unmounts
         return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
             }
         };
-    }, [router]); // This effect should only run once on mount
-
-    // Effect to attach the stream to the video element when the stream is ready
-    useEffect(() => {
-        if (stream && videoRef.current) {
-            videoRef.current.srcObject = stream;
-            setMessage('Camera feed active.');
-        }
-    }, [stream]);
+    }, []); // Empty dependency array ensures this runs only on mount and unmount
 
     const cvApiUrl = process.env.NEXT_PUBLIC_CV_API_URL || 'http://localhost:8009';
 
@@ -104,9 +99,10 @@ export default function MeasurePage() {
                             'Authorization': `Bearer ${token}`,
                         },
                     });
-                    const { corners, message: responseMessage } = response.data;
+                    const { corners, width, height, message: responseMessage } = response.data;
                     setMessage(responseMessage);
                     setDetectedCorners(corners);
+                    setMeasurement({ width, height });
                 } catch (error) {
                     setMessage(`Failed to get measurement: ${error.response?.data?.detail || 'Server error'}`);
                 }
@@ -132,6 +128,17 @@ export default function MeasurePage() {
                     <button onClick={handleCapture} style={{width: '100%', marginTop: '1rem'}}>
                         Capture Frame
                     </button>
+                    {measurement.width > 0 && (
+                        <div style={{marginTop: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '8px'}}>
+                            <h4>Measurement Result</h4>
+                            <p>Detected object dimensions: <strong>{measurement.width} x {measurement.height} pixels</strong>.</p>
+                            <p style={{fontSize: '0.9rem', color: '#666'}}>Note: This is a prototype. To get real-world units (e.g., cm, inches), a reference object of a known size would be needed in the frame.</p>
+                            <div style={{marginTop: '1rem'}}>
+                                <select disabled style={{width: 'calc(50% - 0.5rem)', marginRight: '1rem'}}><option>Assign to Project (Future)</option></select>
+                                <button disabled style={{width: 'calc(50% - 0.5rem)'}}>Save Measurement (Future)</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

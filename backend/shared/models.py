@@ -66,7 +66,7 @@ class Employee(Base):
     __tablename__ = 'employees'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    full_name = Column(String(100))
+    name = Column(String(100))
     job_title = Column(String(100))
     phone_number = Column(String(50))
     address = Column(Text)

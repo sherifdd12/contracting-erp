@@ -30,7 +30,7 @@ app.add_middleware(
 # --- Pydantic Schemas ---
 class EmployeeCreate(BaseModel):
     user_id: int
-    full_name: str
+    name: str
     job_title: str
     phone_number: str | None = None
     address: str | None = None
@@ -41,7 +41,7 @@ class EmployeeCreate(BaseModel):
 class EmployeeOut(BaseModel):
     id: int
     user_id: int
-    full_name: str
+    name: str
     job_title: str
     phone_number: str | None = None
     address: str | None = None
