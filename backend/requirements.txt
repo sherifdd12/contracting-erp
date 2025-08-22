@@ -3,8 +3,8 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 pydantic
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
 python-jose[cryptography]
 python-multipart
 httpx
-opencv-python
+opencv-python-headless
