@@ -126,3 +126,62 @@ class ActivityLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     user = relationship('User')
+
+
+# --- Core Accounting Models ---
+class Account(Base):
+    """Represents an account in the Chart of Accounts."""
+    __tablename__ = 'accounts'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+    type = Column(String(50), nullable=False) # Asset, Liability, Equity, Revenue, Expense
+    normal_balance = Column(String(10), nullable=False) # 'debit' or 'credit'
+    balance = Column(Float, default=0.0, nullable=False)
+
+    journal_lines = relationship('JournalEntryLine', back_populates='account')
+
+class JournalEntry(Base):
+    """Represents a single, balanced financial transaction (a collection of debits and credits)."""
+    __tablename__ = 'journal_entries'
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    description = Column(String(255), nullable=False)
+
+    lines = relationship('JournalEntryLine', back_populates='entry', cascade="all, delete-orphan")
+
+class JournalEntryLine(Base):
+    """Represents a single line (a debit or credit) within a Journal Entry."""
+    __tablename__ = 'journal_entry_lines'
+    id = Column(Integer, primary_key=True)
+    entry_id = Column(Integer, ForeignKey('journal_entries.id'), nullable=False)
+    account_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
+    type = Column(String(10), nullable=False) # 'debit' or 'credit'
+    amount = Column(Float, nullable=False)
+
+    entry = relationship('JournalEntry', back_populates='lines')
+    account = relationship('Account', back_populates='journal_lines')
+
+
+# --- Accounts Payable Models ---
+class Vendor(Base):
+    """Represents a supplier or vendor."""
+    __tablename__ = 'vendors'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+    contact_person = Column(String(100))
+    email = Column(String(120))
+    phone = Column(String(50))
+
+    bills = relationship('Bill', back_populates='vendor')
+
+class Bill(Base):
+    """Represents a bill received from a vendor."""
+    __tablename__ = 'bills'
+    id = Column(Integer, primary_key=True)
+    vendor_id = Column(Integer, ForeignKey('vendors.id'), nullable=False)
+    amount = Column(Float, nullable=False)
+    due_date = Column(DateTime)
+    paid_date = Column(DateTime)
+    status = Column(String(50), default='unpaid') # unpaid, paid
+
+    vendor = relationship('Vendor', back_populates='bills')

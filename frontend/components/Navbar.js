@@ -82,6 +82,7 @@ const Navbar = () => {
             {isLoggedIn && <Link href="/measure" style={linkStyle}>{t('Measure')}</Link>}
             {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && <Link href="/quotes" style={linkStyle}>{t('Quotes')}</Link>}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/accounting" style={linkStyle}>{t('Accounting')}</Link>}
+            {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/reports" style={linkStyle}>{t('Reports')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={linkStyle}>{t('HR')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/activity" style={linkStyle}>Activity</Link>}
             {isLoggedIn && <button onClick={handleLogout} style={buttonStyle}>{t('Logout')}</button>}
@@ -96,6 +97,7 @@ const Navbar = () => {
             {isLoggedIn && <Link href="/measure" style={mobileLinkStyle}>{t('Measure')}</Link>}
             {isLoggedIn && (userRole === 'sales' || userRole === 'admin') && <Link href="/quotes" style={mobileLinkStyle}>{t('Quotes')}</Link>}
             {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/accounting" style={mobileLinkStyle}>{t('Accounting')}</Link>}
+            {isLoggedIn && (userRole === 'accountant' || userRole === 'admin') && <Link href="/reports" style={mobileLinkStyle}>{t('Reports')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/hr" style={mobileLinkStyle}>{t('HR')}</Link>}
             {isLoggedIn && userRole === 'admin' && <Link href="/activity" style={mobileLinkStyle}>Activity</Link>}
             {isLoggedIn && <button onClick={handleLogout} style={{...buttonStyle, ...mobileLinkStyle}}>{t('Logout')}</button>}
