@@ -86,5 +86,7 @@
   "Debits": "المدين",
   "Credits": "الدائن",
   "Invoices": "الفواتير",
-  "My_Profile": "ملفي الشخصي"
+  "My_Profile": "ملفي الشخصي",
+  "No_projects_found": "لم يتم العثور على مشاريع.",
+  "Project_Name": "اسم المشروع"
 }

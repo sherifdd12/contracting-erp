@@ -150,8 +150,10 @@ def get_my_leave_requests(
     token: TokenPayload = Depends(get_current_user_payload),
 ):
     user = db.query(User).filter(User.username == token.sub).first()
+    # If a user exists but has no employee profile, they have no leave requests.
+    # Return an empty list instead of raising an error.
     if not user or not user.employee_profile:
-        raise HTTPException(status_code=404, detail="Employee profile not found for current user.")
+        return []
 
     return user.employee_profile.leave_requests
 

@@ -207,7 +207,11 @@ export default function AccountingPage() {
                         <form onSubmit={handleCreateAccount}>
                             <input type="text" value={accName} onChange={e => setAccName(e.target.value)} placeholder={t('Account_Name')} required/>
                             <select value={accType} onChange={e => setAccType(e.target.value)}>
-                                <option>Asset</option><option>Liability</option><option>Equity</option><option>Revenue</option><option>Expense</option>
+                                <option value="Asset">{t('Asset')}</option>
+                                <option value="Liability">{t('Liability')}</option>
+                                <option value="Equity">{t('Equity')}</option>
+                                <option value="Revenue">{t('Revenue')}</option>
+                                <option value="Expense">{t('Expense')}</option>
                             </select>
                             <select value={accNormalBalance} onChange={e => setAccNormalBalance(e.target.value)}>
                                 <option value="debit">{t('Debit')}</option><option value="credit">{t('Credit')}</option>

@@ -12,6 +12,11 @@ export default function ProfilePage() {
     const [leaveRequests, setLeaveRequests] = useState([]);
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     // Form state for new leave request
     const [startDate, setStartDate] = useState('');
@@ -61,7 +66,7 @@ export default function ProfilePage() {
         } catch (error) { setMessage('Failed to submit leave request.'); }
     };
 
-    if (isLoading) return <div className={styles.container}><Navbar /><p>Loading...</p></div>;
+    if (isLoading || !isClient) return <div className={styles.container}><Navbar /><p>Loading...</p></div>;
 
     return (
         <div className={styles.container}>
